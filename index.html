@@ -250,7 +250,7 @@ p.page-sub {
 
 /* make editable fields fill their boxes so the whole area is clickable */
 .tribute-name-text, .ms-name-text { display:block; width:100%; }
-.tribute-effect-box .effect-text, .ms-effect-box .effect-text { width:100%; flex:1; min-height:1em; }
+.tribute-effect-box .effect-text, .ms-effect-box .effect-text { width:100%; }
 
 /* ═══════════════════════════════════════
    COMMAND / SPIRIT LAYOUT
@@ -353,9 +353,18 @@ p.page-sub {
 /* ═══ editable affordances ═══ */
 [contenteditable] { outline:none; }
 .editable { cursor:text; transition: box-shadow 0.15s ease; }
-.editable:hover { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.3); }
-.editable:focus { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.55); }
 .placeholder-text { font-style:italic; opacity:0.4; }
+
+/* tags: highlight the tag itself (the tag box is the editable) */
+.arch-tag.editable:hover { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.3); }
+.arch-tag.editable:focus { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.55); }
+
+/* name / effect: highlight the fixed-size box, not the content-sized text,
+   so the outline never shrinks as the font auto-fits */
+.tribute-name-field:hover, .ms-name-field:hover,
+.tribute-effect-box:hover, .ms-effect-box:hover { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.3); }
+.tribute-name-field:focus-within, .ms-name-field:focus-within,
+.tribute-effect-box:focus-within, .ms-effect-box:focus-within { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.55); }
 
 .badge-slot { cursor:pointer; }
 .badge-slot:hover { filter: brightness(1.25); }
@@ -802,9 +811,25 @@ function autoFit(el) {
   const min = parseFloat(el.dataset.min);
   let size = max;
   el.style.fontSize = size + 'rem';
-  const fits = () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1;
+
+  // For name/effect, measure against the fixed-height box (the text element
+  // grows with content, so self-comparison would always "fit"). For tags and
+  // anything else, self-measurement is correct.
+  const box = el.closest('.ms-effect-box, .tribute-effect-box, .ms-name-field, .tribute-name-field');
+  let fits;
+  if (box) {
+    const avail = () => {
+      const cs = getComputedStyle(box);
+      const padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      return box.clientHeight - padV;
+    };
+    fits = () => el.scrollHeight <= avail() + 1 && el.scrollWidth <= el.clientWidth + 1;
+  } else {
+    fits = () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1;
+  }
+
   let guard = 0;
-  while (!fits() && size > min && guard < 40) {
+  while (!fits() && size > min && guard < 60) {
     size = Math.max(min, size - 0.02);
     el.style.fontSize = size + 'rem';
     guard++;
@@ -867,7 +892,9 @@ document.getElementById('fileInput').addEventListener('change', e => {
 });
 
 function onPaste(e) {
-  const items = (e.clipboardData || window.clipboardData).items;
+  const cd = e.clipboardData || window.clipboardData;
+  const items = cd.items;
+  // image paste → drop into the art area
   for (const it of items) {
     if (it.type.indexOf('image') === 0) {
       e.preventDefault();
@@ -876,6 +903,33 @@ function onPaste(e) {
       if (area) readImageInto(it.getAsFile(), area);
       return;
     }
+  }
+  // text paste → insert as PLAIN text (strip pasted fonts/sizes) then auto-fit,
+  // so oversized pasted text shrinks to the box instead of overflowing the mist
+  const el = e.target.closest('.editable');
+  if (el) {
+    e.preventDefault();
+    const text = cd.getData('text/plain');
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      // preserve line breaks as <br> nodes
+      const frag = document.createDocumentFragment();
+      const lines = text.split(/\r\n|\r|\n/);
+      lines.forEach((line, i) => {
+        if (i > 0) frag.appendChild(document.createElement('br'));
+        frag.appendChild(document.createTextNode(line));
+      });
+      range.insertNode(frag);
+      range.collapse(false);
+      sel.removeAllRanges(); sel.addRange(range);
+    } else {
+      el.textContent += text;
+    }
+    el.classList.remove('placeholder-text');
+    autoFit(el);
+    markDirty();
   }
 }
 
