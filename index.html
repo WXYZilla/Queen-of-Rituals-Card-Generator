@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queen of Rituals — Card Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0A0906;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 5rem;
+  gap: 1.6rem;
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+}
+
+h1.page-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #C9A84C;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-shadow: 0 0 24px rgba(201,168,76,0.45);
+}
+
+p.page-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #6A5E42;
+  text-align: center;
+}
+
+/* ═══ TOP MENU ═══ */
+.type-menu {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  border: 1px solid rgba(201,168,76,0.14);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.25));
+}
+.type-menu-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #5A5040;
+  align-self: center;
+  margin-right: 0.2rem;
+}
+.type-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #1A1710;
+  border: 1px solid rgba(201,168,76,0.25);
+  color: #B8A878;
+  transition: all 0.18s ease;
+}
+.type-btn:hover { border-color: rgba(201,168,76,0.5); color: #E0CD92; }
+.type-btn.tribute.active { background:#2A2410; border-color:rgba(201,168,76,0.7); color:#E8D27A; box-shadow:0 0 14px rgba(201,168,76,0.2); }
+.type-btn.spirit.active  { background:#3A1010; border-color:rgba(220,80,80,0.7);  color:#E89090; box-shadow:0 0 14px rgba(220,80,80,0.2); }
+.type-btn.command.active { background:#13271B; border-color:rgba(90,180,110,0.7); color:#86D6A2; box-shadow:0 0 14px rgba(90,180,110,0.2); }
+.type-btn.ritualist.active { background:#102240; border-color:rgba(90,140,220,0.7); color:#8FB6F0; box-shadow:0 0 14px rgba(90,140,220,0.25); }
+.save-btn {
+  font-family:'Cinzel', serif; font-size:0.6rem; font-weight:700; letter-spacing:0.12em;
+  text-transform:uppercase; padding:8px 16px; border-radius:4px; cursor:pointer;
+  background:#13231A; border:1px solid rgba(90,180,110,0.4); color:#86D6A2;
+  transition:all 0.18s ease; margin-right:0.4rem;
+}
+.save-btn:hover { border-color:rgba(90,180,110,0.8); filter:brightness(1.2); }
+.save-btn.dirty { border-color:rgba(220,180,80,0.8); color:#E8D27A; box-shadow:0 0 12px rgba(220,180,80,0.25); }
+.deck-bar { display:flex; align-items:center; gap:0.4rem; padding-right:0.6rem; margin-right:0.4rem; border-right:1px solid rgba(201,168,76,0.18); }
+.deck-select {
+  font-family:'Cinzel', serif; font-size:0.62rem; font-weight:700; letter-spacing:0.04em;
+  padding:7px 10px; border-radius:4px; cursor:pointer; max-width:170px;
+  background:#1A1710; border:1px solid rgba(201,168,76,0.4); color:#D4C088;
+}
+.deck-select:hover { border-color:rgba(201,168,76,0.7); }
+.deck-btn {
+  font-family:'Cinzel', serif; font-size:0.72rem; line-height:1; cursor:pointer;
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  background:#1A1710; border:1px solid rgba(201,168,76,0.35); color:#B8A878; border-radius:4px;
+  transition:all 0.15s ease;
+}
+.deck-btn:hover { border-color:rgba(201,168,76,0.7); color:#E0CD92; }
+.deck-btn.del:hover { border-color:rgba(220,80,80,0.6); color:#E08080; }
+
+.hint {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.78rem;
+  color: #5A5040;
+  text-align: center;
+  max-width: 540px;
+  line-height: 1.5;
+}
+
+/* ═══ WORKSPACE: + button outside card ═══ */
+.workspace {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+}
+
+.add-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-size: 1.7rem;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 168px; /* roughly vertically centred to the archetype box */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.add-btn.tribute { background:#1E1A0E; border-color:rgba(201,168,76,0.5); color:#C9A84C; }
+.add-btn.spirit  { background:#2A0C0C; border-color:rgba(220,80,80,0.55);  color:#D88080; }
+.add-btn.command { background:#0E2014; border-color:rgba(90,180,110,0.55); color:#70C890; }
+.add-btn:hover { transform: scale(1.08); filter: brightness(1.25); }
+
+.cards-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.4rem;
+  justify-content: center;
+}
+
+.card-wrap { display:flex; flex-direction:column; align-items:center; gap:0.6rem; position:relative; }
+
+/* ═══════════════════════════════════════
+   STONE CARD BASE  (260×380)
+═══════════════════════════════════════ */
+.card {
+  width: 260px;
+  height: 380px;
+  border-radius: 9px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 130% 90% at 35% 25%, #3C3528 0%, #272318 55%, #181510 100%);
+  box-shadow:
+    inset 0  1px 0 rgba(255,255,255,0.09),
+    inset 0 -1px 0 rgba(0,0,0,0.6),
+    inset  1px 0 0 rgba(255,255,255,0.04),
+    inset -1px 0 0 rgba(0,0,0,0.4),
+    0 0 0 1px #0A0806,
+    0 0 0 2.5px #3A3025,
+    0 18px 55px rgba(0,0,0,0.85),
+    0 5px 15px rgba(0,0,0,0.6);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+.card:hover {
+  transform: translateY(-5px) scale(1.015);
+  box-shadow:
+    inset 0  1px 0 rgba(255,255,255,0.1),
+    0 0 0 1px #0A0806,
+    0 0 0 2.5px #4A4030,
+    0 28px 70px rgba(0,0,0,0.9),
+    0 0 35px rgba(201,168,76,0.07);
+}
+.card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(112deg, transparent 22%, rgba(0,0,0,0.13) 22.4%, transparent 23%),
+    linear-gradient(255deg, transparent 48%, rgba(0,0,0,0.09) 48.4%, transparent 49%),
+    linear-gradient(78deg,  transparent 68%, rgba(255,255,255,0.025) 68.5%, transparent 69.5%);
+  pointer-events: none; z-index: 10;
+}
+.card::after {
+  content: '';
+  position: absolute; inset: 3px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.055);
+  pointer-events: none; z-index: 11;
+}
+
+/* ═══ badge numbers ═══ */
+.badge-num { font-family:'Cinzel', serif; font-weight:900; line-height:1; }
+.badge-lbl { font-family:'Cinzel', serif; font-size:0.42rem; font-weight:700; letter-spacing:0.08em; line-height:1; margin-top:1px; }
+.tp-num { font-size:1.45rem; color:#C9A84C; } .tp-lbl { color:rgba(201,168,76,0.65); }
+.vp-num { font-size:1.45rem; color:#90C890; } .vp-lbl { color:rgba(144,200,144,0.65); }
+.sp-num { font-size:1.2rem;  color:#C87070; } .sp-lbl { color:rgba(200,112,112,0.65); }
+.lp-num { font-size:1.45rem; color:#7FB0EE; } .lp-lbl { color:rgba(127,176,238,0.7); }
+
+/* ═══════════════════════════════════════
+   TRIBUTE LAYOUT
+═══════════════════════════════════════ */
+.tribute-card { display:flex; flex-direction:column; width:100%; height:100%; position:relative; z-index:2; }
+.tribute-namebar { display:flex; align-items:stretch; height:38px; flex-shrink:0; border-bottom:1.5px solid #0A0806; }
+.tribute-name-field {
+  flex:1;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.1) 100%), #2A251C;
+  border-right:1.5px solid #0A0806; border-bottom:1px solid rgba(255,255,255,0.05);
+  display:flex; align-items:center; padding:0 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.tribute-name-text {
+  font-family:'Cinzel Decorative', serif; font-size:0.68rem; font-weight:700;
+  color:#D4C9A8; letter-spacing:0.02em;
+  text-shadow:0 1px 2px rgba(0,0,0,0.9), 0 0 8px rgba(201,168,76,0.15); line-height:1.2;
+}
+.tribute-tp-badge {
+  width:48px; height:48px; margin-top:-5px;
+  background: radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.1) 0%, transparent 60%), linear-gradient(145deg, #2E2820, #181410);
+  border:1.5px solid rgba(201,168,76,0.35); border-top:1.5px solid rgba(201,168,76,0.5);
+  border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07); z-index:5;
+}
+.tribute-image-zone {
+  flex:1; border-bottom:1.5px solid #0A0806; overflow:hidden;
+  background: radial-gradient(ellipse at 50% 50%, #2C2820 0%, #141210 100%);
+  display:flex; align-items:center; justify-content:center; position:relative;
+}
+.tribute-image-zone img, .archetype-image-area img { width:100%; height:100%; object-fit:cover; object-position:top center; opacity:0.9; }
+.tribute-effect-box {
+  height:90px; flex-shrink:0; background:#2A2828; border-top:1px solid rgba(201,168,76,0.15);
+  padding:7px 9px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  position:relative; overflow:hidden;
+}
+.tribute-effect-box::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:40px;
+  background: linear-gradient(to top, rgba(180,140,40,0.45) 0%, rgba(140,110,30,0.25) 40%, transparent 100%);
+  filter:blur(1px); pointer-events:none; border-radius:0 0 7px 7px;
+}
+.effect-text { font-family:'Crimson Pro', Georgia, serif; font-size:0.68rem; line-height:1.52; color:#C8BDA0; text-align:center; }
+
+/* make editable fields fill their boxes so the whole area is clickable */
+.tribute-name-text, .ms-name-text { display:block; width:100%; }
+.tribute-effect-box .effect-text, .ms-effect-box .effect-text { width:100%; flex:1; min-height:1em; }
+
+/* ═══════════════════════════════════════
+   COMMAND / SPIRIT LAYOUT
+═══════════════════════════════════════ */
+.ms-card { display:flex; flex-direction:column; width:100%; height:100%; position:relative; z-index:2; }
+.ms-namebar { display:flex; align-items:stretch; height:36px; flex-shrink:0; border-bottom:1.5px solid #0A0806; position:relative; }
+.ms-name-field {
+  flex:1;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.1) 100%), var(--card-accent-dark, #202820);
+  display:flex; align-items:center; padding:0 52px 0 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.ms-name-text {
+  font-family:'Cinzel Decorative', serif; font-size:0.62rem; font-weight:700;
+  color:#D4C9A8; letter-spacing:0.02em; text-shadow:0 1px 2px rgba(0,0,0,0.9); line-height:1.2;
+}
+.ms-vp-badge {
+  position:absolute; top:-4px; right:0; width:48px; height:48px;
+  background: radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.1) 0%, transparent 60%), linear-gradient(145deg, #1E2820, #10140A);
+  border:1.5px solid rgba(144,200,144,0.35); border-top:1.5px solid rgba(144,200,144,0.5);
+  border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6;
+  box-shadow:0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.ms-arch-header-row { display:flex; height:26px; flex-shrink:0; border-bottom:1.5px solid #0A0806; position:relative; overflow:hidden; }
+.arch-header-label {
+  width:90px; flex-shrink:0; background:var(--card-accent, #2A4030);
+  display:flex; align-items:center; padding-left:10px;
+  font-family:'Cinzel', serif; font-size:0.58rem; font-weight:600; letter-spacing:0.14em;
+  text-transform:uppercase; color:rgba(212,201,168,0.8);
+  clip-path:polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.arch-header-image-bg { flex:1; background:var(--card-accent-mid, #1A2820); }
+.ms-mid-row { display:flex; flex:1; border-bottom:1.5px solid #0A0806; overflow:hidden; }
+.ms-arch-tags {
+  width:68px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; padding:6px 5px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.3) 100%), var(--card-accent-dark, #161E18);
+  border-right:1.5px solid #0A0806;
+}
+.arch-tag {
+  font-family:'Cinzel', serif; font-size:0.52rem; font-weight:700; letter-spacing:0.05em;
+  text-align:center; padding:4px 3px; border-radius:3px; line-height:1.1;
+  background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:#C8BDA0;
+}
+.arch-tag.tag-red   { background:rgba(180,40,40,0.22);  border-color:rgba(220,90,90,0.55);  color:#E8A0A0; }
+.arch-tag.tag-green { background:rgba(40,130,70,0.22);  border-color:rgba(110,200,140,0.55); color:#9FD9B4; }
+.ms-lp-badge { border:1.5px solid rgba(127,176,238,0.4) !important; border-top:1.5px solid rgba(127,176,238,0.6) !important; }
+.ratio-ctrl {
+  display:flex; align-items:center; gap:4px; margin-top:4px;
+  font-family:'Cinzel', serif; font-size:0.55rem; color:#8FB6F0;
+}
+.ratio-ctrl input {
+  width:30px; text-align:center; font-family:'Cinzel', serif; font-size:0.7rem; font-weight:700;
+  background:#0C1626; border:1px solid rgba(127,176,238,0.5); color:#BBD6F8; border-radius:3px; padding:2px 0;
+}
+.ratio-ctrl .ratio-lbl { font-size:0.5rem; letter-spacing:0.06em; color:#6A88B0; line-height:1.1; text-align:left; }
+.archetype-image-area { flex:1; position:relative; overflow:hidden; background: radial-gradient(ellipse at 50% 45%, #282420 0%, #121010 100%); }
+.placeholder-art {
+  width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem;
+  color:rgba(200,180,140,0.1);
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.012) 10px, rgba(255,255,255,0.012) 11px),
+    radial-gradient(ellipse at 50% 40%, rgba(50,40,30,0.5) 0%, transparent 70%);
+}
+
+/* === SP badge: flush directly under the VP badge === */
+.sp-overlay {
+  position:absolute; top:44px; right:0; width:48px; height:44px;
+  z-index:20;
+  background: radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.1) 0%, transparent 60%), linear-gradient(145deg, #3A1010, #200808);
+  border:1.5px solid rgba(220,80,80,0.5); border-top:none; border-radius:0 0 4px 4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06); z-index:6;
+}
+
+.ms-effect-box {
+  background:#2A2828; border-top:1px solid rgba(255,255,255,0.07);
+  padding:8px 10px 0px; height:115px; flex-shrink:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  position:relative; overflow:hidden;
+}
+.ms-effect-box .effect-text { position:relative; z-index:2; padding-bottom:28px; }
+.ms-effect-box::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:55px;
+  pointer-events:none; z-index:3; border-radius:0 0 7px 7px;
+}
+.card.command .ms-effect-box::after {
+  background: linear-gradient(to top, rgba(40,120,70,0.55) 0%, rgba(30,90,55,0.35) 35%, rgba(20,60,35,0.15) 65%, transparent 100%);
+  filter:blur(1px);
+}
+.card.spirit .ms-effect-box::after {
+  background: linear-gradient(to top, rgba(160,40,40,0.5) 0%, rgba(120,30,30,0.32) 35%, rgba(80,20,20,0.14) 65%, transparent 100%);
+  filter:blur(1px);
+}
+.card.ritualist .ms-effect-box::after {
+  background: linear-gradient(to top, rgba(40,90,180,0.5) 0%, rgba(30,65,140,0.32) 35%, rgba(20,45,90,0.14) 65%, transparent 100%);
+  filter:blur(1px);
+}
+
+/* ═══ editable affordances ═══ */
+[contenteditable] { outline:none; }
+.editable { cursor:text; transition: box-shadow 0.15s ease; }
+.editable:hover { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.3); }
+.editable:focus { box-shadow: inset 0 0 0 1px rgba(201,168,76,0.55); }
+.placeholder-text { font-style:italic; opacity:0.4; }
+
+.badge-slot { cursor:pointer; }
+.badge-slot:hover { filter: brightness(1.25); }
+
+.image-slot { cursor:pointer; }
+.image-slot:hover::before {
+  content:'＋ image'; position:absolute; inset:0; z-index:4;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Cinzel', serif; font-size:0.55rem; letter-spacing:0.15em;
+  color:rgba(255,255,255,0.55); background:rgba(0,0,0,0.35); pointer-events:none;
+}
+
+/* ═══ number picker popover ═══ */
+.num-picker {
+  position:fixed; z-index:100;
+  background: linear-gradient(180deg, #221E16, #141009);
+  border:1px solid rgba(201,168,76,0.4);
+  border-radius:6px; padding:6px;
+  display:grid; grid-template-columns: repeat(5, 1fr); gap:4px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.8);
+}
+.num-cell {
+  width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+  font-family:'Cinzel', serif; font-weight:700; font-size:0.8rem; color:#C9A84C;
+  background:#1A1610; border:1px solid rgba(201,168,76,0.2); border-radius:3px; cursor:pointer;
+}
+.num-cell:hover { background:#3A2E18; border-color:rgba(201,168,76,0.6); color:#F0D87C; }
+
+/* ═══ card toolbar ═══ */
+.card-tools { display:flex; gap:0.5rem; }
+.tool-btn {
+  font-family:'Cinzel', serif; font-size:0.55rem; letter-spacing:0.1em;
+  padding:5px 14px; border-radius:3px; cursor:pointer;
+  background:#1A1710; border:1px solid rgba(201,168,76,0.3); color:#B8A878;
+  transition: all 0.15s ease;
+}
+.tool-btn:hover { border-color:rgba(201,168,76,0.6); color:#E0CD92; }
+.tool-btn.del:hover { border-color:rgba(220,80,80,0.6); color:#E08080; }
+.row-label {
+  font-family:'Cinzel', serif; font-size:0.58rem; letter-spacing:0.18em; text-transform:uppercase;
+  color:#5A5040; text-align:center;
+}
+.hidden-file { display:none; }
+
+/* ═══ fixed bottom-right Add Card button ═══ */
+.fab-add {
+  position:fixed; right:24px; bottom:24px; z-index:90;
+  font-family:'Cinzel', serif; font-size:0.7rem; font-weight:700;
+  letter-spacing:0.12em; text-transform:uppercase;
+  padding:14px 22px; border-radius:30px; cursor:pointer;
+  background:linear-gradient(145deg,#2A2410,#161109);
+  border:1.5px solid rgba(201,168,76,0.5); color:#E0CD92;
+  box-shadow:0 6px 22px rgba(0,0,0,0.7), 0 0 18px rgba(201,168,76,0.12);
+  display:flex; align-items:center; gap:8px; transition:all 0.18s ease;
+}
+.fab-add:hover { transform:translateY(-2px); filter:brightness(1.2); border-color:rgba(201,168,76,0.8); }
+.fab-add .plus { font-size:1.1rem; font-weight:300; line-height:1; }
+
+/* ═══ per-card tag +/- buttons (attached to the tag column) ═══ */
+.ms-arch-tags { position:relative; }
+.card-stage { position:relative; width:260px; height:380px; }
+.tag-ctrls {
+  position:absolute;
+  left:-40px;
+  top:70px;                       /* aligned to the archetype/tag mid-row */
+  display:flex; flex-direction:column; gap:8px; z-index:25;
+}
+.tag-btn {
+  width:20px; height:20px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.9rem; font-weight:300; line-height:1; cursor:pointer;
+  background:#1A1710; border:1px solid rgba(201,168,76,0.5); color:#C9A84C;
+  user-select:none; transition: all 0.15s ease;
+  box-shadow:0 2px 5px rgba(0,0,0,0.6);
+}
+.tag-btn:hover { filter:brightness(1.3); transform:scale(1.1); }
+.tag-btn[disabled] { opacity:0.3; cursor:not-allowed; pointer-events:none; filter:none; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Queen of Rituals</h1>
+<p class="page-sub">Card Generator</p>
+
+<div class="type-menu">
+  <div class="deck-bar">
+    <span class="type-menu-label">Deck:</span>
+    <select id="deckSelect" class="deck-select" onchange="switchDeck(this.value)"></select>
+    <button class="deck-btn" onclick="newDeck()" title="New deck">＋</button>
+    <button class="deck-btn" onclick="renameDeck()" title="Rename deck">✎</button>
+    <button class="deck-btn del" onclick="deleteDeck()" title="Delete deck">🗑</button>
+  </div>
+  <button class="save-btn" id="saveBtn" onclick="saveProgress(true)" title="Save this deck in your browser">⤓ Save</button>
+  <span class="type-menu-label">New card:</span>
+  <button class="type-btn tribute active" data-type="tribute" onclick="selectType('tribute')">Tribute</button>
+  <button class="type-btn spirit" data-type="spirit" onclick="selectType('spirit')">Spirit (Red)</button>
+  <button class="type-btn command" data-type="command" onclick="selectType('command')">Command (Green)</button>
+  <button class="type-btn ritualist" data-type="ritualist" onclick="selectType('ritualist')">Ritualist (Blue)</button>
+</div>
+
+<p class="hint">
+  Pick a type, then press <strong>Add Card</strong> (bottom-right) to spawn a blank card.
+  Click the name, effect, or tags to type — text auto-shrinks to fit.
+  Click a VP / SP / TP / LP badge to pick 1–10. Click the art box (or paste an image) for artwork.
+  On a <strong>Ritualist</strong>, the red-tags box sets how many top tags are red; the rest turn green.
+  <strong>Save</strong> keeps your cards in this browser (works in the downloaded file).
+</p>
+
+<div class="workspace">
+  <div id="cardsArea" class="cards-area"></div>
+</div>
+
+<div class="fab-add" onclick="addCard()" title="Spawn a new card"><span class="plus">＋</span> Add Card</div>
+
+<input type="file" id="fileInput" class="hidden-file" accept="image/*">
+
+<script>
+/* ───────────────────────────────────────
+   State
+─────────────────────────────────────── */
+let currentType = 'tribute';
+let cardSeq = 0;
+let pendingImageTarget = null;   // image area awaiting a file pick
+let activeWrap = null;           // the card-wrap most recently clicked/edited
+
+const TYPE = {
+  tribute:   { accent:'#6A5A1A', accentMid:'#2A2410', accentDark:'#1E1A0E' },
+  spirit:    { accent:'#6A1A08', accentMid:'#3A0C04', accentDark:'#2A0A04' },
+  command:   { accent:'#1E3828', accentMid:'#162018', accentDark:'#141C16' },
+  ritualist: { accent:'#14315E', accentMid:'#101C30', accentDark:'#0C1626' },
+};
+
+function selectType(t) {
+  currentType = t;
+  document.querySelectorAll('.type-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.type === t));
+
+  // Convert the active card (or the last one) to this layout, in place.
+  const target = activeWrap || document.querySelector('.cards-area .card-wrap:last-child');
+  if (target) { convertCard(target, t); markDirty(); }
+}
+
+/* read out the current contents of a card-wrap so we can carry them over */
+function harvest(w) {
+  const card = w.querySelector('.card');
+  if (!card) return {};
+  const txt = sel => {
+    const el = card.querySelector(sel);
+    if (!el || el.classList.contains('placeholder-text')) return '';
+    return el.textContent.trim();
+  };
+  // like txt() but keeps newlines from <br>/<div> that contenteditable inserts
+  const multiline = sel => {
+    const el = card.querySelector(sel);
+    if (!el || el.classList.contains('placeholder-text')) return '';
+    let html = el.innerHTML
+      .replace(/<div><br\s*\/?><\/div>/gi, '\n')  // empty line
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/div>/gi, '')                   // closing div: no break itself
+      .replace(/<div>/gi, '\n')                   // a new div starts a new line
+      .replace(/&nbsp;/gi, ' ');
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent
+      .replace(/^\n+/, '')                        // no leading blank from first div
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/\s+$/, '');
+  };
+  const badge = sel => {
+    const el = card.querySelector(sel);
+    return el && el.textContent.trim() !== '—' ? el.textContent.trim() : '';
+  };
+  const img = (card.querySelector('.archetype-image-area img') ||
+               card.querySelector('.tribute-image-zone img'));
+  const tags = Array.from(card.querySelectorAll('.arch-tag'))
+    .map(e => e.classList.contains('placeholder-text') ? '' : e.textContent.trim());
+  const redCount = card.querySelectorAll('.arch-tag.tag-red').length || null;
+  return {
+    name:   txt('.ms-name-text, .tribute-name-text'),
+    effect: multiline('.effect-text'),
+    // a single shared stat number carries across VP/SP/TP/LP
+    stat:   badge('.vp-num') || badge('.lp-num') || badge('.sp-num') || badge('.tp-num'),
+    sp:     badge('.sp-num'),
+    tags,
+    redCount,
+    imgSrc: img ? img.src : ''
+  };
+}
+
+function convertCard(w, type) {
+  const carry = harvest(w);
+  if (type === 'tribute') buildTribute(carry, w);
+  else                    buildMsCard(type, carry, w);
+}
+
+/* ───────────────────────────────────────
+   Card builders
+─────────────────────────────────────── */
+function addCard() {
+  currentType === 'tribute' ? buildTribute({}) : buildMsCard(currentType, {});
+  markDirty();
+}
+
+/* esc() guards carried-over text against breaking the template HTML */
+function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* like esc() but turns newlines into <br> so saved line breaks render back */
+function escMultiline(s) { return esc(s).replace(/\n/g, '<br>'); }
+
+/* Render a card-wrap. If `existing` is passed, rebuild into it (in-place
+   conversion); otherwise create a new wrap and append it. */
+function render(label, inner, existing) {
+  const body =
+    `<span class="row-label">${label}</span>` +
+    `<div class="card-stage">${inner}</div>` +
+    `<div class="card-tools">
+       <button class="tool-btn" onclick="downloadCard(this)">↓ PNG</button>
+       <button class="tool-btn del" onclick="this.closest('.card-wrap').remove(); markDirty();">✕ Remove</button>
+     </div>`;
+  let w = existing;
+  if (w) {
+    w.innerHTML = body;
+  } else {
+    w = document.createElement('div');
+    w.className = 'card-wrap';
+    w.innerHTML = body;
+    document.getElementById('cardsArea').appendChild(w);
+  }
+  finalize(w);
+  activeWrap = w;
+  return w;
+}
+
+function buildTribute(carry, existing) {
+  const id = 'card_' + (++cardSeq);
+  const c = carry || {};
+  const html = `
+    <div class="card" id="${id}" style="--card-accent:${TYPE.tribute.accent};">
+      <div class="tribute-card">
+        <div class="tribute-namebar">
+          <div class="tribute-name-field">
+            <span class="tribute-name-text editable" contenteditable
+                  data-fit="0.68" data-min="0.4" data-ph="Card Name">${esc(c.name)}</span>
+          </div>
+          <div class="tribute-tp-badge badge-slot" onclick="openPicker(this,'tp')">
+            <span class="badge-num tp-num">${c.stat || '—'}</span><span class="badge-lbl tp-lbl">TP</span>
+          </div>
+        </div>
+        <div class="tribute-image-zone image-slot" onclick="pickImage(this)">
+          ${c.imgSrc ? `<img src="${c.imgSrc}">` : ``}
+        </div>
+        <div class="tribute-effect-box">
+          <p class="effect-text editable" contenteditable
+             data-fit="0.68" data-min="0.42" data-ph="Effect text…">${escMultiline(c.effect)}</p>
+        </div>
+      </div>
+    </div>
+    <div class="tag-ctrls">
+      <div class="tag-btn" disabled title="Tags are only on Spirit / Command">＋</div>
+      <div class="tag-btn" disabled title="Tags are only on Spirit / Command">－</div>
+    </div>`;
+  return render('Tribute', html, existing);
+}
+
+function buildMsCard(type, carry, existing) {
+  const id = 'card_' + (++cardSeq);
+  const t = TYPE[type];
+  const c = carry || {};
+  const isSpirit = type === 'spirit';
+  const isRitualist = type === 'ritualist';
+  const label = isSpirit ? 'Spirit' : (isRitualist ? 'Ritualist' : 'Command');
+  let tags = (c.tags && c.tags.length) ? c.tags.slice() : ['', ''];
+  if (tags.length === 0) tags = [''];
+
+  // Ritualist: first `redCount` tags are red, the rest green.
+  let redCount = (c.redCount != null) ? c.redCount : Math.min(1, tags.length);
+  redCount = Math.max(0, Math.min(redCount, tags.length));
+
+  const tagsHtml = tags.map((tg, i) => {
+    const colorClass = isRitualist ? (i < redCount ? ' tag-red' : ' tag-green') : '';
+    return `<div class="arch-tag editable${colorClass}" contenteditable data-fit="0.52" data-min="0.34" data-ph="Tag">${esc(tg)}</div>`;
+  }).join('');
+
+  const badgeKind = isRitualist ? 'lp' : 'vp';
+  const badgeLabel = isRitualist ? 'LP' : 'VP';
+  const badgeClass = isRitualist ? 'ms-vp-badge ms-lp-badge' : 'ms-vp-badge';
+  const headerLabel = isRitualist ? 'Specialty' : 'Archetype';
+
+  const ratioCtrl = isRitualist
+    ? `<div class="ratio-ctrl">
+         <input type="number" min="0" value="${redCount}" title="Number of red tags"
+                onchange="setRedCount(this)" onclick="event.stopPropagation()">
+         <span class="ratio-lbl">red<br>tags</span>
+       </div>`
+    : '';
+
+  const html = `
+    <div class="card ${type}" id="${id}"
+         style="--card-accent:${t.accent};--card-accent-mid:${t.accentMid};--card-accent-dark:${t.accentDark};">
+      <div class="ms-card">
+        <div class="ms-namebar">
+          <div class="ms-name-field">
+            <span class="ms-name-text editable" contenteditable
+                  data-fit="0.62" data-min="0.38" data-ph="Card Name">${esc(c.name)}</span>
+          </div>
+          <div class="${badgeClass} badge-slot" onclick="openPicker(this,'${badgeKind}')">
+            <span class="badge-num ${badgeKind}-num">${c.stat || '—'}</span><span class="badge-lbl ${badgeKind}-lbl">${badgeLabel}</span>
+          </div>
+        </div>
+        <div class="ms-arch-header-row">
+          <div class="arch-header-label" style="background:${t.accent};">${headerLabel}</div>
+          <div class="arch-header-image-bg" style="background:${t.accentMid};"></div>
+        </div>
+        <div class="ms-mid-row">
+          <div class="ms-arch-tags" style="background:linear-gradient(180deg,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.3) 100%), ${t.accentMid};">
+            ${tagsHtml}
+          </div>
+          <div class="archetype-image-area image-slot" onclick="pickImage(this)" style="background:${t.accentMid};">
+            ${c.imgSrc ? `<img src="${c.imgSrc}">` : ``}
+          </div>
+        </div>
+        ${isSpirit ? `<div class="sp-overlay badge-slot" onclick="event.stopPropagation();openPicker(this,'sp')">
+              <span class="badge-num sp-num">${c.sp || c.stat || '—'}</span><span class="badge-lbl sp-lbl">SP</span>
+           </div>` : ``}
+        <div class="ms-effect-box">
+          <p class="effect-text editable" contenteditable
+             data-fit="0.68" data-min="0.42" data-ph="Effect text…">${escMultiline(c.effect)}</p>
+        </div>
+      </div>
+    </div>
+    <div class="tag-ctrls">
+      <div class="tag-btn" title="Add tag" onclick="addTag(this)">＋</div>
+      <div class="tag-btn" title="Remove tag" onclick="removeTag(this)">－</div>
+      ${ratioCtrl}
+    </div>`;
+  return render(label, html, existing);
+}
+
+/* ───────────────────────────────────────
+   Tag add / remove (Spirit, Command, Ritualist)
+─────────────────────────────────────── */
+function addTag(btn) {
+  const w = btn.closest('.card-wrap');
+  const col = w.querySelector('.ms-arch-tags');
+  if (!col) return;
+  const tag = document.createElement('div');
+  tag.className = 'arch-tag editable';
+  tag.setAttribute('contenteditable', '');
+  tag.dataset.fit = '0.52'; tag.dataset.min = '0.34'; tag.dataset.ph = 'Tag';
+  col.appendChild(tag);
+  setPlaceholder(tag);
+  tag.addEventListener('focus', () => { activeWrap = w; clearPlaceholder(tag); });
+  tag.addEventListener('blur',  () => setPlaceholder(tag));
+  tag.addEventListener('input', () => autoFit(tag));
+  tag.addEventListener('paste', onPaste);
+  recolorTags(w);   // keep red/green split correct on ritualist
+  tag.focus();
+  markDirty();
+}
+
+function removeTag(btn) {
+  const w = btn.closest('.card-wrap');
+  const col = w.querySelector('.ms-arch-tags');
+  if (!col) return;
+  const tags = col.querySelectorAll('.arch-tag');
+  if (tags.length > 0) tags[tags.length - 1].remove();
+  recolorTags(w);
+  markDirty();
+}
+
+/* Ritualist only: re-apply red (top N) / green (rest) classes based on the
+   ratio input. Other types are left untouched. */
+function recolorTags(w) {
+  const card = w.querySelector('.card');
+  if (!card || !card.classList.contains('ritualist')) return;
+  const input = w.querySelector('.ratio-ctrl input');
+  const tags = Array.from(card.querySelectorAll('.arch-tag'));
+  let red = input ? parseInt(input.value, 10) : 0;
+  if (isNaN(red)) red = 0;
+  red = Math.max(0, Math.min(red, tags.length));
+  if (input && parseInt(input.value, 10) !== red) input.value = red;
+  tags.forEach((tg, i) => {
+    tg.classList.toggle('tag-red', i < red);
+    tg.classList.toggle('tag-green', i >= red);
+  });
+}
+
+function setRedCount(input) {
+  const w = input.closest('.card-wrap');
+  recolorTags(w);
+  markDirty();
+}
+
+/* ───────────────────────────────────────
+   After insertion: wire placeholders + autofit
+─────────────────────────────────────── */
+function finalize(w) {
+  w.addEventListener('mousedown', () => { activeWrap = w; }, true);
+  w.querySelectorAll('.editable').forEach(el => {
+    setPlaceholder(el);
+    el.addEventListener('focus', () => { activeWrap = w; clearPlaceholder(el); });
+    el.addEventListener('blur',  () => setPlaceholder(el));
+    el.addEventListener('input', () => autoFit(el));
+    el.addEventListener('paste', onPaste);
+    if (!el.classList.contains('placeholder-text')) autoFit(el);
+  });
+
+  // Clicking the padding / empty area of a name or effect box focuses its
+  // editable. Clicks landing on the editable (or its text) are left alone so
+  // the browser places the caret where you clicked.
+  w.querySelectorAll('.tribute-name-field, .ms-name-field, .tribute-effect-box, .ms-effect-box')
+    .forEach(box => {
+      box.addEventListener('mousedown', e => {
+        const ed = box.querySelector('.editable');
+        if (!ed) return;
+        if (ed === e.target || ed.contains(e.target)) return;  // natural caret
+        e.preventDefault();
+        ed.focus();
+        // only here (clicked outside the text) do we drop the caret at the end
+        const r = document.createRange();
+        r.selectNodeContents(ed); r.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(r);
+      });
+    });
+}
+
+function setPlaceholder(el) {
+  if (el.textContent.trim() === '') {
+    el.textContent = el.dataset.ph || '';
+    el.classList.add('placeholder-text');
+    el.style.fontSize = el.dataset.fit + 'rem';
+  }
+}
+function clearPlaceholder(el) {
+  if (el.classList.contains('placeholder-text')) {
+    el.textContent = '';
+    el.classList.remove('placeholder-text');
+  }
+}
+
+/* shrink font until the text fits its box (height-based) */
+function autoFit(el) {
+  const max = parseFloat(el.dataset.fit);
+  const min = parseFloat(el.dataset.min);
+  let size = max;
+  el.style.fontSize = size + 'rem';
+  const fits = () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1;
+  let guard = 0;
+  while (!fits() && size > min && guard < 40) {
+    size = Math.max(min, size - 0.02);
+    el.style.fontSize = size + 'rem';
+    guard++;
+  }
+}
+
+/* ───────────────────────────────────────
+   Number picker (1–10)
+─────────────────────────────────────── */
+let activePicker = null;
+let pickerOutsideHandler = null;
+function openPicker(badgeEl, kind) {
+  closePicker();
+  const p = document.createElement('div');
+  p.className = 'num-picker';
+  document.body.appendChild(p);
+  const lo = (kind === 'lp') ? 15 : 1;
+  const hi = (kind === 'lp') ? 25 : 10;
+  for (let n = lo; n <= hi; n++) {
+    const c = document.createElement('div');
+    c.className = 'num-cell';
+    c.textContent = n;
+    c.onclick = (e) => { e.stopPropagation(); setBadge(badgeEl, kind, n); closePicker(); };
+    p.appendChild(c);
+  }
+  const r = badgeEl.getBoundingClientRect();
+  let left = r.left, top = r.bottom + 6;
+  if (left + 180 > window.innerWidth) left = window.innerWidth - 188;
+  p.style.left = left + 'px';
+  p.style.top = top + 'px';
+  activePicker = p;
+  // close on any click outside the picker; registered next tick so the
+  // opening click doesn't immediately trigger it
+  pickerOutsideHandler = (e) => { if (!p.contains(e.target)) closePicker(); };
+  setTimeout(() => document.addEventListener('click', pickerOutsideHandler), 0);
+}
+function setBadge(badgeEl, kind, n) {
+  badgeEl.querySelector('.' + kind + '-num').textContent = n;
+}
+function closePicker() {
+  if (pickerOutsideHandler) {
+    document.removeEventListener('click', pickerOutsideHandler);
+    pickerOutsideHandler = null;
+  }
+  if (activePicker) { activePicker.remove(); activePicker = null; }
+}
+
+/* ───────────────────────────────────────
+   Images: click to pick, or paste anywhere
+─────────────────────────────────────── */
+function pickImage(area) {
+  pendingImageTarget = area;
+  const fi = document.getElementById('fileInput');
+  fi.value = '';
+  fi.click();
+}
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f && pendingImageTarget) readImageInto(f, pendingImageTarget);
+});
+
+function onPaste(e) {
+  const items = (e.clipboardData || window.clipboardData).items;
+  for (const it of items) {
+    if (it.type.indexOf('image') === 0) {
+      e.preventDefault();
+      const card = e.target.closest('.card');
+      const area = card.querySelector('.archetype-image-area') || card.querySelector('.tribute-image-zone');
+      if (area) readImageInto(it.getAsFile(), area);
+      return;
+    }
+  }
+}
+
+function readImageInto(file, area) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    compressDataURL(ev.target.result, dataUrl => {
+      // keep any SP overlay on spirit cards
+      const overlay = area.querySelector('.sp-overlay');
+      area.querySelectorAll('img').forEach(i => i.remove());
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      area.insertBefore(img, area.firstChild);
+      if (overlay) area.appendChild(overlay);
+      markDirty();
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+/* Downscale to fit the card art (max ~520px on the long edge at 2x) and
+   re-encode as JPEG so the stored data URL stays small enough for
+   localStorage. Falls back to the original on any failure. */
+function compressDataURL(src, cb) {
+  const im = new Image();
+  im.onload = () => {
+    try {
+      const MAX = 520;
+      let { width: w, height: h } = im;
+      if (w > MAX || h > MAX) {
+        const s = MAX / Math.max(w, h);
+        w = Math.round(w * s); h = Math.round(h * s);
+      }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(im, 0, 0, w, h);
+      cb(cv.toDataURL('image/jpeg', 0.82));
+    } catch (e) {
+      cb(src); // e.g. tainted canvas from a cross-origin paste
+    }
+  };
+  im.onerror = () => cb(src);
+  im.src = src;
+}
+
+/* ───────────────────────────────────────
+   Export PNG
+─────────────────────────────────────── */
+const H2C_SOURCES = [
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js',
+  'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+];
+
+function loadH2C(i = 0) {
+  return new Promise((resolve, reject) => {
+    if (typeof html2canvas !== 'undefined') return resolve();
+    if (i >= H2C_SOURCES.length) return reject(new Error('Could not load html2canvas'));
+    const s = document.createElement('script');
+    s.src = H2C_SOURCES[i];
+    s.onload = () => resolve();
+    s.onerror = () => loadH2C(i + 1).then(resolve).catch(reject);
+    document.head.appendChild(s);
+  });
+}
+
+function downloadCard(btn) {
+  const card = btn.closest('.card-wrap').querySelector('.card');
+  const original = btn.textContent;
+  btn.textContent = '…rendering';
+  btn.style.pointerEvents = 'none';
+
+  // hide placeholders + the editing/tag controls during capture
+  const hidden = [];
+  card.querySelectorAll('.placeholder-text').forEach(el => {
+    hidden.push([el, 'text', el.textContent]); el.textContent = '';
+  });
+  card.querySelectorAll('.tag-ctrls').forEach(el => {
+    hidden.push([el, 'disp', el.style.display]); el.style.display = 'none';
+  });
+
+  const restore = () => {
+    hidden.forEach(([el, kind, val]) => {
+      if (kind === 'text') el.textContent = val;
+      else el.style.display = val;
+    });
+    btn.textContent = original;
+    btn.style.pointerEvents = '';
+  };
+
+  loadH2C()
+    .then(() => html2canvas(card, {
+      scale: 3, backgroundColor: null, useCORS: true,
+      allowTaint: false, logging: false
+    }))
+    .then(canvas => {
+      const url = canvas.toDataURL('image/png');
+      const name = (card.querySelector('.ms-name-text, .tribute-name-text')?.textContent || 'card')
+        .trim().replace(/[^\w가-힣 -]/g, '').replace(/\s+/g, '_') || 'card';
+      restore();
+
+      const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const canDownload = ('download' in document.createElement('a')) && !isIOS;
+
+      if (canDownload) {
+        const a = document.createElement('a');
+        a.download = 'qor_' + name + '.png';
+        a.href = url;
+        document.body.appendChild(a); a.click(); a.remove();
+      } else {
+        showImageModal(url);   // iOS: let the user long-press to save
+      }
+    })
+    .catch(err => {
+      restore();
+      alert('PNG export failed: ' + err.message +
+            '\nIf you pasted an image from another site, try uploading the file instead (web images can block canvas export).');
+    });
+}
+
+/* iOS-friendly: show the rendered PNG so the user can long-press → Save Image */
+function showImageModal(url) {
+  const ov = document.createElement('div');
+  ov.style.cssText =
+    'position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);' +
+    'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;';
+  ov.innerHTML =
+    '<p style="font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.12em;color:#E0CD92;text-align:center;text-transform:uppercase;">' +
+    'Long-press the card → “Save Image”</p>' +
+    '<img src="' + url + '" style="max-width:90%;max-height:70vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.8);">' +
+    '<button style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.12em;padding:10px 22px;border-radius:20px;' +
+    'background:#2A2410;border:1px solid rgba(201,168,76,0.5);color:#E0CD92;cursor:pointer;text-transform:uppercase;">Close</button>';
+  ov.querySelector('button').onclick = () => ov.remove();
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+
+/* ───────────────────────────────────────
+   Decks: multiple named card sets (like p5 sketches)
+─────────────────────────────────────── */
+const DECKS_KEY = 'qor_decks_v1';
+let dirty = false;
+let memoryStore = {};                 // fallback store when localStorage is blocked
+let decks = {};                       // id -> { name, cards: [...] }
+let currentDeckId = null;
+
+function storageGet(k) {
+  try { const v = localStorage.getItem(k); return v != null ? v : memoryStore[k]; }
+  catch (e) { return memoryStore[k]; }
+}
+function storageAvailable() {
+  try { const t='__qor_t'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }
+  catch (e) { return false; }
+}
+function storageSet(k, v) {
+  if (!storageAvailable()) { memoryStore[k] = v; return 'memory'; }
+  try { localStorage.setItem(k, v); return 'ok'; }
+  catch (e) { memoryStore[k] = v; throw e; }
+}
+
+function newDeckId() { return 'deck_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function loadDecks() {
+  const raw = storageGet(DECKS_KEY);
+  if (raw) {
+    try {
+      const obj = JSON.parse(raw);
+      if (obj && obj.decks) { decks = obj.decks; currentDeckId = obj.current; }
+    } catch (e) { /* ignore corrupt store */ }
+  }
+  if (!currentDeckId || !decks[currentDeckId]) {
+    const id = newDeckId();
+    decks[id] = { name: 'Untitled Deck', cards: [] };
+    currentDeckId = id;
+  }
+}
+
+function persistDecks() {
+  return storageSet(DECKS_KEY, JSON.stringify({ decks, current: currentDeckId }));
+}
+
+function markDirty() {
+  dirty = true;
+  const b = document.getElementById('saveBtn');
+  if (b) { b.classList.add('dirty'); b.textContent = '⤓ Save*'; }
+}
+function markClean() {
+  dirty = false;
+  const b = document.getElementById('saveBtn');
+  if (b) { b.classList.remove('dirty'); b.textContent = '⤓ Saved'; setTimeout(() => { if (!dirty) b.textContent = '⤓ Save'; }, 1500); }
+}
+
+/* turn the current board into a plain array of card objects */
+function serializeBoard() {
+  return Array.from(document.querySelectorAll('.cards-area .card-wrap')).map(w => {
+    const card = w.querySelector('.card');
+    let type = 'tribute';
+    if (card.classList.contains('spirit')) type = 'spirit';
+    else if (card.classList.contains('command')) type = 'command';
+    else if (card.classList.contains('ritualist')) type = 'ritualist';
+    return { type, ...harvest(w) };
+  });
+}
+
+/* Save current board into the current deck, then persist all decks. */
+function saveProgress(announce) {
+  if (!decks[currentDeckId]) loadDecks();
+  decks[currentDeckId].cards = serializeBoard();
+  let result;
+  try { result = persistDecks(); }
+  catch (e) {
+    alert('Save failed: this deck (likely its images) exceeds the browser\'s ~5MB storage limit.\n' +
+          'Try fewer or smaller images. Your work is kept for this session but won\'t survive a reload.');
+    return;
+  }
+  markClean();
+  refreshDeckSelect();
+  if (result === 'memory' && announce) {
+    alert('Heads-up: browser storage isn\'t available here (e.g. the in-app preview), so saves only last for the current session. Download the file and open it in a browser for permanent decks.');
+  }
+}
+
+function rebuildFromData(c) {
+  if (c.type === 'tribute') buildTribute(c);
+  else buildMsCard(c.type, c);
+}
+
+/* Render a deck's cards onto the board. */
+function renderDeck(id) {
+  document.getElementById('cardsArea').innerHTML = '';
+  const d = decks[id];
+  if (d && d.cards && d.cards.length) {
+    d.cards.forEach(rebuildFromData);
+    document.querySelectorAll('.cards-area .card-wrap').forEach(recolorTags);
+  } else {
+    currentType === 'tribute' ? buildTribute({}) : buildMsCard(currentType, {});
+  }
+  dirty = false;
+}
+
+/* ───────── deck switcher actions ───────── */
+function refreshDeckSelect() {
+  const sel = document.getElementById('deckSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  Object.keys(decks).forEach(id => {
+    const o = document.createElement('option');
+    o.value = id; o.textContent = decks[id].name;
+    if (id === currentDeckId) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function switchDeck(id) {
+  if (id === currentDeckId) return;
+  if (dirty && !confirm('Switch decks without saving? Unsaved changes to "' +
+      decks[currentDeckId].name + '" will be lost.')) {
+    refreshDeckSelect();   // revert the dropdown selection
+    return;
+  }
+  currentDeckId = id;
+  persistDecksQuiet();
+  renderDeck(id);
+  refreshDeckSelect();
+}
+
+function persistDecksQuiet() { try { persistDecks(); } catch (e) {} }
+
+function newDeck() {
+  if (dirty && !confirm('Start a new deck? Unsaved changes to the current deck will be lost.')) return;
+  const name = prompt('Name your new deck:', 'Deck ' + (Object.keys(decks).length + 1));
+  if (name === null) return;
+  const id = newDeckId();
+  decks[id] = { name: name.trim() || 'Untitled Deck', cards: [] };
+  currentDeckId = id;
+  persistDecksQuiet();
+  renderDeck(id);
+  refreshDeckSelect();
+}
+
+function renameDeck() {
+  const d = decks[currentDeckId];
+  const name = prompt('Rename deck:', d.name);
+  if (name === null) return;
+  d.name = name.trim() || d.name;
+  persistDecksQuiet();
+  refreshDeckSelect();
+}
+
+function deleteDeck() {
+  if (Object.keys(decks).length <= 1) { alert('You can\'t delete your only deck.'); return; }
+  if (!confirm('Delete deck "' + decks[currentDeckId].name + '"? This can\'t be undone.')) return;
+  delete decks[currentDeckId];
+  currentDeckId = Object.keys(decks)[0];
+  persistDecksQuiet();
+  renderDeck(currentDeckId);
+  refreshDeckSelect();
+}
+
+/* mark dirty on any edit/number/image change */
+document.addEventListener('input', e => {
+  if (e.target.closest('.card-wrap') || e.target.closest('.ratio-ctrl')) markDirty();
+});
+document.addEventListener('click', e => {
+  if (e.target.classList && e.target.classList.contains('num-cell')) markDirty();
+});
+
+/* warn on leaving with unsaved work */
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue = ''; return ''; }
+});
+
+/* ───────────────────────────────────────
+   Startup
+─────────────────────────────────────── */
+loadDecks();
+refreshDeckSelect();
+renderDeck(currentDeckId);
+dirty = false;
+</script>
+</body>
+</html>
