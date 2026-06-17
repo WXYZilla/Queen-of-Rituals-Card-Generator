@@ -77,6 +77,7 @@ p.page-sub {
 .type-btn.spirit.active  { background:#3A1010; border-color:rgba(220,80,80,0.7);  color:#E89090; box-shadow:0 0 14px rgba(220,80,80,0.2); }
 .type-btn.command.active { background:#13271B; border-color:rgba(90,180,110,0.7); color:#86D6A2; box-shadow:0 0 14px rgba(90,180,110,0.2); }
 .type-btn.ritualist.active { background:#102240; border-color:rgba(90,140,220,0.7); color:#8FB6F0; box-shadow:0 0 14px rgba(90,140,220,0.25); }
+.type-btn.queen.active { background:#2C1148; border-color:rgba(180,90,240,0.7); color:#D29CF6; box-shadow:0 0 14px rgba(180,90,240,0.3); }
 .save-btn {
   font-family:'Cinzel', serif; font-size:0.6rem; font-weight:700; letter-spacing:0.12em;
   text-transform:uppercase; padding:8px 16px; border-radius:4px; cursor:pointer;
@@ -205,6 +206,25 @@ p.page-sub {
 .vp-num { font-size:1.45rem; color:#90C890; } .vp-lbl { color:rgba(144,200,144,0.65); }
 .sp-num { font-size:1.2rem;  color:#C87070; } .sp-lbl { color:rgba(200,112,112,0.65); }
 .lp-num { font-size:1.45rem; color:#7FB0EE; } .lp-lbl { color:rgba(127,176,238,0.7); }
+.ms-lp-badge.locked { opacity:0.85; cursor:default; }
+.ms-lp-badge.locked.queen-lp { border-color:rgba(200,140,250,0.4) !important; border-top-color:rgba(200,140,250,0.6) !important; }
+.queen-lp .lp-num { color:#C99CF0; }
+.queen-lp .lp-lbl { color:rgba(201,156,240,0.7); }
+/* summon-terms bar at the top of the effect box */
+.summon-bar {
+  width:100%; flex-shrink:0;
+  background: rgba(120,60,180,0.22);
+  border-bottom:1px solid rgba(190,120,240,0.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  padding:4px 9px; display:flex; align-items:center; justify-content:center;
+  position:relative; z-index:4;
+}
+.summon-text {
+  font-family:'Crimson Pro', Georgia, serif; font-size:0.6rem; line-height:1.35;
+  color:#E0C8F4; text-align:center; width:100%;
+}
+.summon-bar:hover { box-shadow: inset 0 0 0 1px rgba(190,120,240,0.4); }
+.summon-bar:focus-within { box-shadow: inset 0 0 0 1px rgba(190,120,240,0.7); }
 
 /* ═══════════════════════════════════════
    TRIBUTE LAYOUT
@@ -349,6 +369,10 @@ p.page-sub {
   background: linear-gradient(to top, rgba(40,90,180,0.5) 0%, rgba(30,65,140,0.32) 35%, rgba(20,45,90,0.14) 65%, transparent 100%);
   filter:blur(1px);
 }
+.card.queen .ms-effect-box::after {
+  background: linear-gradient(to top, rgba(140,50,210,0.5) 0%, rgba(105,35,160,0.32) 35%, rgba(70,25,110,0.14) 65%, transparent 100%);
+  filter:blur(1px);
+}
 
 /* ═══ editable affordances ═══ */
 [contenteditable] { outline:none; }
@@ -463,6 +487,7 @@ p.page-sub {
   <button class="type-btn spirit" data-type="spirit" onclick="selectType('spirit')">Spirit (Red)</button>
   <button class="type-btn command" data-type="command" onclick="selectType('command')">Command (Green)</button>
   <button class="type-btn ritualist" data-type="ritualist" onclick="selectType('ritualist')">Ritualist (Blue)</button>
+  <button class="type-btn queen" data-type="queen" onclick="selectType('queen')">Queen (Purple)</button>
 </div>
 
 <p class="hint">
@@ -495,6 +520,7 @@ const TYPE = {
   spirit:    { accent:'#6A1A08', accentMid:'#3A0C04', accentDark:'#2A0A04' },
   command:   { accent:'#1E3828', accentMid:'#162018', accentDark:'#141C16' },
   ritualist: { accent:'#14315E', accentMid:'#101C30', accentDark:'#0C1626' },
+  queen:     { accent:'#5A1E8C', accentMid:'#2A123F', accentDark:'#1E0D2E' },
 };
 
 function selectType(t) {
@@ -545,7 +571,8 @@ function harvest(w) {
   return {
     name:   txt('.ms-name-text, .tribute-name-text'),
     effect: multiline('.effect-text'),
-    // a single shared stat number carries across VP/SP/TP/LP
+    summon: multiline('.summon-text'),
+    // a single shared stat number carries across VP/SP/TP/LP (queen LP is empty)
     stat:   badge('.vp-num') || badge('.lp-num') || badge('.sp-num') || badge('.tp-num'),
     sp:     badge('.sp-num'),
     tags,
@@ -634,29 +661,57 @@ function buildMsCard(type, carry, existing) {
   const c = carry || {};
   const isSpirit = type === 'spirit';
   const isRitualist = type === 'ritualist';
-  const label = isSpirit ? 'Spirit' : (isRitualist ? 'Ritualist' : 'Command');
+  const isQueen = type === 'queen';
+  const usesSpecialty = isRitualist || isQueen;   // red/green specialty tags
+  const hasSP = isSpirit || isQueen;              // SP overlay under the top badge
+  const label = isSpirit ? 'Spirit' : (isRitualist ? 'Ritualist' : (isQueen ? 'Queen' : 'Command'));
   let tags = (c.tags && c.tags.length) ? c.tags.slice() : ['', ''];
   if (tags.length === 0) tags = [''];
 
-  // Ritualist: first `redCount` tags are red, the rest green.
+  // Ritualist & Queen: first `redCount` tags are red, the rest green.
   let redCount = (c.redCount != null) ? c.redCount : Math.min(1, tags.length);
   redCount = Math.max(0, Math.min(redCount, tags.length));
 
   const tagsHtml = tags.map((tg, i) => {
-    const colorClass = isRitualist ? (i < redCount ? ' tag-red' : ' tag-green') : '';
+    const colorClass = usesSpecialty ? (i < redCount ? ' tag-red' : ' tag-green') : '';
     return `<div class="arch-tag editable${colorClass}" contenteditable data-fit="0.52" data-min="0.34" data-ph="Tag">${esc(tg)}</div>`;
   }).join('');
 
-  const badgeKind = isRitualist ? 'lp' : 'vp';
-  const badgeLabel = isRitualist ? 'LP' : 'VP';
-  const badgeClass = isRitualist ? 'ms-vp-badge ms-lp-badge' : 'ms-vp-badge';
-  const headerLabel = isRitualist ? 'Specialty' : 'Archetype';
+  // Top-right badge: VP (command/spirit), LP (ritualist), or locked empty LP (queen)
+  const badgeKind = (isRitualist || isQueen) ? 'lp' : 'vp';
+  const badgeLabel = (isRitualist || isQueen) ? 'LP' : 'VP';
+  let badgeClass, badgeClick, badgeValue;
+  if (isQueen) {
+    badgeClass = 'ms-vp-badge ms-lp-badge locked queen-lp';
+    badgeClick = '';                 // locked: clicking does nothing
+    badgeValue = '—';                // always empty
+  } else if (isRitualist) {
+    badgeClass = 'ms-vp-badge ms-lp-badge';
+    badgeClick = `onclick="openPicker(this,'lp')"`;
+    badgeValue = c.stat || '—';
+  } else {
+    badgeClass = 'ms-vp-badge';
+    badgeClick = `onclick="openPicker(this,'vp')"`;
+    badgeValue = c.stat || '—';
+  }
+  const badgeSlotClass = isQueen ? '' : ' badge-slot';
+  const headerLabel = usesSpecialty ? 'Specialty' : 'Archetype';
 
-  const ratioCtrl = isRitualist
+  const ratioCtrl = usesSpecialty
     ? `<div class="ratio-ctrl">
          <input type="number" min="0" value="${redCount}" title="Number of red tags"
                 onchange="setRedCount(this)" onclick="event.stopPropagation()">
          <span class="ratio-lbl">red<br>tags</span>
+       </div>`
+    : '';
+
+  // Queen SP picker is 1–15 (handled in openPicker via the 'spq' kind)
+  const spKind = isQueen ? 'spq' : 'sp';
+  const spValue = c.sp || '—';
+  const summonBar = isQueen
+    ? `<div class="summon-bar">
+         <span class="summon-text editable" contenteditable
+               data-fit="0.6" data-min="0.36" data-ph="Summon terms…">${escMultiline(c.summon)}</span>
        </div>`
     : '';
 
@@ -669,8 +724,8 @@ function buildMsCard(type, carry, existing) {
             <span class="ms-name-text editable" contenteditable
                   data-fit="0.62" data-min="0.38" data-ph="Card Name">${esc(c.name)}</span>
           </div>
-          <div class="${badgeClass} badge-slot" onclick="openPicker(this,'${badgeKind}')">
-            <span class="badge-num ${badgeKind}-num">${c.stat || '—'}</span><span class="badge-lbl ${badgeKind}-lbl">${badgeLabel}</span>
+          <div class="${badgeClass}${badgeSlotClass}" ${badgeClick}>
+            <span class="badge-num ${badgeKind}-num">${badgeValue}</span><span class="badge-lbl ${badgeKind}-lbl">${badgeLabel}</span>
           </div>
         </div>
         <div class="ms-arch-header-row">
@@ -685,10 +740,11 @@ function buildMsCard(type, carry, existing) {
             ${c.imgSrc ? `<img src="${c.imgSrc}">` : ``}
           </div>
         </div>
-        ${isSpirit ? `<div class="sp-overlay badge-slot" onclick="event.stopPropagation();openPicker(this,'sp')">
-              <span class="badge-num sp-num">${c.sp || c.stat || '—'}</span><span class="badge-lbl sp-lbl">SP</span>
+        ${hasSP ? `<div class="sp-overlay badge-slot" onclick="event.stopPropagation();openPicker(this,'${spKind}')">
+              <span class="badge-num sp-num">${spValue}</span><span class="badge-lbl sp-lbl">SP</span>
            </div>` : ``}
         <div class="ms-effect-box">
+          ${summonBar}
           <p class="effect-text editable" contenteditable
              data-fit="0.68" data-min="0.42" data-ph="Effect text…">${escMultiline(c.effect)}</p>
         </div>
@@ -738,7 +794,7 @@ function removeTag(btn) {
    ratio input. Other types are left untouched. */
 function recolorTags(w) {
   const card = w.querySelector('.card');
-  if (!card || !card.classList.contains('ritualist')) return;
+  if (!card || !(card.classList.contains('ritualist') || card.classList.contains('queen'))) return;
   const input = w.querySelector('.ratio-ctrl input');
   const tags = Array.from(card.querySelectorAll('.arch-tag'));
   let red = input ? parseInt(input.value, 10) : 0;
@@ -774,15 +830,20 @@ function finalize(w) {
   // Clicking the padding / empty area of a name or effect box focuses its
   // editable. Clicks landing on the editable (or its text) are left alone so
   // the browser places the caret where you clicked.
-  w.querySelectorAll('.tribute-name-field, .ms-name-field, .tribute-effect-box, .ms-effect-box')
+  w.querySelectorAll('.tribute-name-field, .ms-name-field, .tribute-effect-box, .ms-effect-box, .summon-bar')
     .forEach(box => {
       box.addEventListener('mousedown', e => {
-        const ed = box.querySelector('.editable');
+        // ignore clicks that belong to a nested editable region (e.g. the
+        // summon bar sitting inside the effect box) — that box handles itself
+        const nested = e.target.closest('.summon-bar');
+        if (nested && nested !== box) return;
+        // the editable directly owned by this box (not one in a child region)
+        let ed = box.querySelector(':scope > .editable');
+        if (!ed) ed = Array.from(box.querySelectorAll('.editable')).find(x => x.closest('.summon-bar, .ms-effect-box, .tribute-effect-box, .ms-name-field, .tribute-name-field') === box);
         if (!ed) return;
         if (ed === e.target || ed.contains(e.target)) return;  // natural caret
         e.preventDefault();
         ed.focus();
-        // only here (clicked outside the text) do we drop the caret at the end
         const r = document.createRange();
         r.selectNodeContents(ed); r.collapse(false);
         const sel = window.getSelection();
@@ -815,7 +876,7 @@ function autoFit(el) {
   // For name/effect, measure against the fixed-height box (the text element
   // grows with content, so self-comparison would always "fit"). For tags and
   // anything else, self-measurement is correct.
-  const box = el.closest('.ms-effect-box, .tribute-effect-box, .ms-name-field, .tribute-name-field');
+  const box = el.closest('.summon-bar, .ms-effect-box, .tribute-effect-box, .ms-name-field, .tribute-name-field');
   let fits;
   if (box) {
     const avail = () => {
@@ -847,7 +908,7 @@ function openPicker(badgeEl, kind) {
   p.className = 'num-picker';
   document.body.appendChild(p);
   const lo = (kind === 'lp') ? 15 : 1;
-  const hi = (kind === 'lp') ? 25 : 10;
+  const hi = (kind === 'lp') ? 25 : (kind === 'spq') ? 15 : 10;
   for (let n = lo; n <= hi; n++) {
     const c = document.createElement('div');
     c.className = 'num-cell';
@@ -867,7 +928,10 @@ function openPicker(badgeEl, kind) {
   setTimeout(() => document.addEventListener('click', pickerOutsideHandler), 0);
 }
 function setBadge(badgeEl, kind, n) {
-  badgeEl.querySelector('.' + kind + '-num').textContent = n;
+  // 'spq' (queen SP, 1–15) writes to the same .sp-num element as 'sp'
+  const cls = (kind === 'spq') ? 'sp' : kind;
+  badgeEl.querySelector('.' + cls + '-num').textContent = n;
+  markDirty();
 }
 function closePicker() {
   if (pickerOutsideHandler) {
@@ -1131,6 +1195,7 @@ function serializeBoard() {
     if (card.classList.contains('spirit')) type = 'spirit';
     else if (card.classList.contains('command')) type = 'command';
     else if (card.classList.contains('ritualist')) type = 'ritualist';
+    else if (card.classList.contains('queen')) type = 'queen';
     return { type, ...harvest(w) };
   });
 }
